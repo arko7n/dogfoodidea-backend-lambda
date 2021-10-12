@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 const randomBytes = require('crypto').randomBytes;
-const stripe = require('stripe')('sk_test_51JiioiKaEtQWd0xXRWSWD0sHcwYlVWs1Fw3XQxM2551sueoghJtoB5a54CmXsGr4pjf6G5BKkm9pGuRVekzI4RIo00uU18kmLV');
+const stripe = require('stripe')('sk_test_51JjocdDQkELcVjKd6ERbHJLHnnLnZe6eKSFJYovfJF7UpSzRybYkIPrTv22EG4byEBZAhkLTteqLhqURGLb8wGv000rb3kE2AK');
 
 exports.handler = async (event, context, callback) => {
     
@@ -18,7 +18,9 @@ exports.handler = async (event, context, callback) => {
     
     // Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
+    payment_method_types: [
+      'card'
+    ],
     line_items: [
       {
         price_data: {
@@ -26,13 +28,13 @@ exports.handler = async (event, context, callback) => {
           product_data: {
             name: 'Unicorn ride',
           },
-          unit_amount: 2000,
+          unit_amount: 100,
         },
         quantity: 1,
       },
     ],
     mode: 'payment',
-    success_url: 'https://example.com/success',
+    success_url: 'https://www.dogfoodidea.com/success',
     cancel_url: 'https://example.com/cancel',
   });
   
