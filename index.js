@@ -35,7 +35,7 @@ exports.handler = async (event, context, callback) => {
     ],
     mode: 'payment',
     success_url: 'https://www.dogfoodidea.com/success',
-    cancel_url: 'https://example.com/cancel',
+    cancel_url: 'https://www.dogfoodidea.com/',
   });
   
   console.log(session);
