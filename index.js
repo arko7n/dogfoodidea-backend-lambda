@@ -8,7 +8,7 @@ exports.handler = async (event, context, callback) => {
     
     // const orderId = toUrlString(randomBytes(16));
     
-    console.log('Received event: ', event);
+    console.log('Hello! askjhdakslh Received event: ', event);
 
     // The body field of the event in a proxy integration is a raw string.
     // In order to extract meaningful values, we need to first parse this string
@@ -16,15 +16,21 @@ exports.handler = async (event, context, callback) => {
     // header first and use a different parsing strategy based on that value.
     const requestBody = JSON.parse(event.body);
     
+    // const prices = await stripe.prices.list({
+    //   lookup_keys: ["WildRydesPremium"],
+    //   expand: ['data.product'],
+    // });
+    
     // Stripe checkout session
     const session = await stripe.checkout.sessions.create({
     payment_method_types: [
-      'card'
+      'card',
+      'ideal'
     ],
     line_items: [
       {
         price_data: {
-          currency: 'usd',
+          currency: 'eur',
           product_data: {
             name: 'Unicorn ride',
           },
