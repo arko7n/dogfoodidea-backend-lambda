@@ -114,6 +114,49 @@ exports.handler = async (event, context, callback) => {
             'Access-Control-Allow-Origin': '*',
         },
     });
+  } else if (requestBody.checkoutCategory == "PaymentElementSubscription") {
+    // Create a new customer object
+    const customer = await stripe.customers.create({
+      email: "diptarko.b9@gmail.com",
+    });
+    
+    console.log(customer);
+    
+    const prices = await stripe.prices.list({
+      lookup_keys: ["WildRydesPremium"],
+      expand: ['data.product'],
+    });
+
+    let output;
+
+    try {
+      // Create the subscription. Note we're expanding the Subscription's
+      // latest invoice and that invoice's payment_intent
+      // so we can pass it to the front end to confirm the payment
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: prices.data[0].id,
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      output = {
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      };
+    } catch (error) {
+      output = { error: { message: error.message } };
+    }
+  
+    callback(null, {
+        statusCode: 201,
+        body: JSON.stringify(output),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+    });
   }
 };
 
