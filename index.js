@@ -16,16 +16,6 @@ exports.handler = async (event, context, callback) => {
     // header first and use a different parsing strategy based on that value.
     const requestBody = JSON.parse(event.body);
     
-    // const portalSession = await stripe.billingPortal.sessions.create({
-    //   customer: customerId,
-    //   return_url: 'https://www.dogfoodidea.com/',
-    // });
-    
-    // const prices = await stripe.prices.list({
-    //   lookup_keys: ["WildRydesPremium"],
-    //   expand: ['data.product'],
-    // });
-    
     if (requestBody.checkoutCategory == "CheckoutSession") {
       // Stripe checkout session
       const session = await stripe.checkout.sessions.create({
@@ -53,6 +43,51 @@ exports.handler = async (event, context, callback) => {
     });
     
     console.log(session);
+    
+    callback(null, {
+        statusCode: 201,
+        body: JSON.stringify(session),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+    });
+  } else if (requestBody.checkoutCategory == "CheckoutSessionSubscription") { 
+    // const portalSession = await stripe.billingPortal.sessions.create({
+    //   customer: customerId,
+    //   return_url: 'https://www.dogfoodidea.com/',
+    // });
+    
+    const prices = await stripe.prices.list({
+      lookup_keys: ["WildRydesPremium"],
+      expand: ['data.product'],
+    });
+    
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: [
+        'card',
+      ],
+      billing_address_collection: 'auto',
+      line_items: [
+        {
+          price: prices.data[0].id,
+          // For metered billing, do not pass quantity
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: 'https://www.dogfoodidea.com/success',
+      cancel_url: 'https://www.dogfoodidea.com/',
+    });
+    
+    console.log(session);
+    
+    callback(null, {
+        statusCode: 201,
+        body: JSON.stringify(session),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+    });
   } else if (requestBody.checkoutCategory == "PaymentElement") {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 100,
