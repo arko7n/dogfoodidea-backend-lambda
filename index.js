@@ -8,7 +8,7 @@ exports.handler = async (event, context, callback) => {
     
     // const orderId = toUrlString(randomBytes(16));
     
-    console.log('Hello! askjhdakslh Received event: ', event);
+    console.log('Received event: ', event);
 
     // The body field of the event in a proxy integration is a raw string.
     // In order to extract meaningful values, we need to first parse this string
@@ -16,43 +16,70 @@ exports.handler = async (event, context, callback) => {
     // header first and use a different parsing strategy based on that value.
     const requestBody = JSON.parse(event.body);
     
+    // const portalSession = await stripe.billingPortal.sessions.create({
+    //   customer: customerId,
+    //   return_url: 'https://www.dogfoodidea.com/',
+    // });
+    
     // const prices = await stripe.prices.list({
     //   lookup_keys: ["WildRydesPremium"],
     //   expand: ['data.product'],
     // });
     
-    // Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-    payment_method_types: [
-      'card',
-      'ideal'
-    ],
-    line_items: [
-      {
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: 'Unicorn ride',
+    if (requestBody.checkoutCategory == "CheckoutSession") {
+      // Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: [
+          'card',
+          'ideal',
+          'giropay',
+          'bancontact'
+        ],
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: 'Unicorn ride',
+              },
+              unit_amount: 100,
+            },
+            quantity: 1,
           },
-          unit_amount: 100,
-        },
-        quantity: 1,
-      },
-    ],
-    mode: 'payment',
-    success_url: 'https://www.dogfoodidea.com/success',
-    cancel_url: 'https://www.dogfoodidea.com/',
-  });
+        ],
+        mode: 'payment',
+        success_url: 'https://www.dogfoodidea.com/success',
+        cancel_url: 'https://www.dogfoodidea.com/',
+    });
+    
+    console.log(session);
+  } else if (requestBody.checkoutCategory == "PaymentElement") {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 100,
+      currency: "eur",
+      payment_method_types: [
+        "giropay",
+        "eps",
+        "p24",
+        "sofort",
+        "sepa_debit",
+        "card",
+        "bancontact",
+        "ideal",
+      ],
+    });
   
-  console.log(session);
-
-  callback(null, {
-      statusCode: 201,
-      body: JSON.stringify(session),
-      headers: {
-          'Access-Control-Allow-Origin': '*',
-      },
-  });
+    callback(null, {
+        statusCode: 201,
+        // body: JSON.stringify(session),
+        body: JSON.stringify({
+          clientSecret: paymentIntent.client_secret,
+        }),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+    });
+  }
 };
 
 function toUrlString(buffer) {
